@@ -9,6 +9,9 @@ import base64
 
 PATH_TO_IMAGES = "Images"
 url = "http://192.168.43.181:8080/fileupload"
+ROW = 1 # Actually get ROW from mLab database
+FORMAT = "CPUID_Hang_Cot.jpg"
+MLAB = "CPUID_Hang_Cot-59S237958"
 
 def getIP():
     try:
@@ -46,16 +49,11 @@ def send_image(path):
     print(os.getcwd())
     image_list =[]
     for i,image in enumerate(os.listdir(os.getcwd())):
-        rename_image = getserial_fake() + "_" + str(i) + ".jpg"
+        rename_image = getserial_fake() + "_" + str(ROW) + "_" + str(i+1) + ".jpg"
         os.rename(image,rename_image)
         send_image_to_server(rename_image,url)
     return image_list
 
-# change_directory(PATH_TO_IMAGES)
-# images = find_image()
-# cv2.imshow("Asdf",images[0])
-# cv2.waitKey()
-# print(images)
 def send_image_to_server(image,url):
     #url = "http://192.168.43.181:8080/fileupload"
     filetoupload = {'filetoupload': open(str(image), 'rb')}
