@@ -1,14 +1,14 @@
 import socket
 import os
 import glob
-from PIL import Image
 import json
-import cv2 
+import requests
 import numpy as np
 import time
 import base64
 
 PATH_TO_IMAGES = "Images"
+url = "http://192.168.43.181:8080/fileupload"
 
 def getIP():
     try:
@@ -29,38 +29,43 @@ def getserial():
     except:
         cpuserial = "Can not found CPU ID, ERROR000000000"
     return cpuserial
+
+def getserial_fake():
+    cpuserial = "RASPID"
+    return cpuserial
+
 def change_directory(path):
     os.chdir(os.path.join(os.getcwd(),path))
 
-def find_image():
+def str_join(*args):
+    return ''.join(map(str, args))
+
+
+os.chdir(os.path.join(os.getcwd(),PATH_TO_IMAGES))
+def send_image(path):
     print(os.getcwd())
     image_list =[]
-    for image in glob.glob("*.jpg"):
-        im = cv2.imread(image)
-        print(type(im))
-        image_list.append(im)
+    for i,image in enumerate(os.listdir(os.getcwd())):
+        rename_image = getserial_fake() + "_" + str(i) + ".jpg"
+        os.rename(image,rename_image)
+        send_image_to_server(rename_image,url)
     return image_list
 
-change_directory(PATH_TO_IMAGES)
-images = find_image()
-cv2.imshow("Asdf",images[0])
-cv2.waitKey()
-print(images)
+# change_directory(PATH_TO_IMAGES)
+# images = find_image()
+# cv2.imshow("Asdf",images[0])
+# cv2.waitKey()
+# print(images)
+def send_image_to_server(image,url):
+    #url = "http://192.168.43.181:8080/fileupload"
+    filetoupload = {'filetoupload': open(str(image), 'rb')}
+    r = requests.post(url, files=filetoupload)
+    print(r.text)
 
-def create_json(image):
-    #data = Image.open(image)
-    data=image
-    print(data)
-    outjson = {}
-    outjson['image'] = data   # data has to be encoded base64 and decode back in the Android app base64 as well
-    outjson['DeivceID'] = getserial()
-    json_data = json.dumps(outjson)
-    print(json_data)
-    return json_data
-
-# if __name__ == '__main__':
-#     while True:
-#         images = find_image()
-#         print("HELLO")
-#         time.sleep(5)
+if __name__ == '__main__':
+    while True:
+        #images = find_image()
+        send_image(PATH_TO_IMAGES)
+        print("Send image to server success")
+        time.sleep(5)
 
